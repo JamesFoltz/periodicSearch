@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>periodicSearch</title>
+    <title>Periodic Table - Detailed Element Info (Dark Theme + Field Selection)</title>
+    <link rel="shortcut icon" href="favicon.jpg" type="image/jpeg">
+    <script src="./elements.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -150,36 +152,6 @@ function renderFieldsBox(selectedFields) {
     ).join("");
 }
 
-async function fetchPeriodicData() {
-    try {
-        const response = await fetch('https://raw.githubusercontent.com/Bowserinator/Periodic-Table-JSON/master/PeriodicTableJSON.json');
-        if (!response.ok) throw new Error("Failed to fetch periodic table data.");
-        const data = await response.json();
-
-        // Recursively rename 'cpk-hex' to 'color'
-        function renameKeys(obj) {
-            if (Array.isArray(obj)) {
-                return obj.map(renameKeys);
-            } else if (obj !== null && typeof obj === 'object') {
-                return Object.fromEntries(
-                    Object.entries(obj).map(([key, value]) => [
-                        key === 'cpk-hex' ? 'color' : key,
-                        renameKeys(value)
-                    ])
-                );
-            }
-            return obj;
-        }
-
-        return renameKeys(data);
-    } catch (e) {
-        document.getElementById('elements').innerHTML = `<div style='color:#ff5252'>Failed to load data. Please check your internet connection or try again later.<br>Error: ${e}</div>`;
-        throw e;
-    }
-}
-
-
-
 function elementCard(el, selectedFields) {
     // Try to get an image if available (fallback to a placeholder)
     const imgUrl = el.images && el.images.length ? el.images[0].url :
@@ -239,41 +211,38 @@ function filterElements(elements, query) {
     );
 }
 
-(async function () {
-    const data = await fetchPeriodicData();
-    const elements = data.elements;
-    const container = document.getElementById('elements');
-    const fieldsBox = document.getElementById('fieldsBox');
-    const searchInput = document.getElementById('search');
+const elements = table.elements;
+const container = document.getElementById('elements');
+const fieldsBox = document.getElementById('fieldsBox');
+const searchInput = document.getElementById('search');
 
-    let selectedFields = getDefaultFields();
+let selectedFields = getDefaultFields();
 
-    // Render field checkboxes
-    function renderFields() {
-        fieldsBox.innerHTML = renderFieldsBox(selectedFields);
-        // Add event listeners to checkboxes
-        fieldsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-            cb.addEventListener('change', function() {
-                if (this.checked) {
-                    if (!selectedFields.includes(this.value)) selectedFields.push(this.value);
-                } else {
-                    selectedFields = selectedFields.filter(f => f !== this.value);
-                }
-                update(searchInput.value);
-            });
+// Render field checkboxes
+function renderFields() {
+    fieldsBox.innerHTML = renderFieldsBox(selectedFields);
+    // Add event listeners to checkboxes
+    fieldsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener('change', function() {
+            if (this.checked) {
+                if (!selectedFields.includes(this.value)) selectedFields.push(this.value);
+            } else {
+                selectedFields = selectedFields.filter(f => f !== this.value);
+            }
+            update(searchInput.value);
         });
-    }
+    });
+}
 
-    function update(query='') {
-        const filtered = filterElements(elements, query);
-        container.innerHTML = filtered.map(el => elementCard(el, selectedFields)).join('');
-    }
+function update(query='') {
+    const filtered = filterElements(elements, query);
+    container.innerHTML = filtered.map(el => elementCard(el, selectedFields)).join('');
+}
 
-    renderFields();
-    update();
+renderFields();
+update();
 
-    searchInput.addEventListener('input', e => update(e.target.value));
-})();
+searchInput.addEventListener('input', e => update(e.target.value));
 </script>
 </body>
 </html>
