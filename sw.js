@@ -1,7 +1,7 @@
 // Automatically updated version (replace with dynamic versioning logic)
 const cacheVersion = "42d34ea"; // Replace this dynamically during build or commit
 const cacheName = `offline-cache-${cacheVersion}`;
-const cacheUrls = ["index.html", "favicon.ico", "flashcards.js"];
+const cacheUrls = ["index.html", "favicon.jpg", "elements.js"];
 
 // Installing the Service Worker
 self.addEventListener("install", async (event) => {
